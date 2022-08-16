@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:compression="http://www.mulesoft.org/schema/mule/compression"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/compression http://www.mulesoft.org/schema/mule/compression/current/mule-compression.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b3d9d625-0b26-447c-b6cc-eee4503639c0" basePath="/">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="edb9920e-2afb-4cb8-b2f6-d4bbbac7170d" >
+		<file:connection workingDir="C:\Users\2195998\OneDrive - Cognizant\Desktop\archive" />
+	</file:config>
+	<flow name="compression-servicesFlow" doc:id="8985d3ae-82aa-459e-a51c-c018d2b76a99" >
+		<http:listener doc:name="Listener" doc:id="19d35584-2a0d-45d1-a57d-b86797e462cf" config-ref="HTTP_Listener_config" path="/create-zip"/>
+		<compression:archive doc:name="Archive" doc:id="c90c089b-ddf7-40ba-8444-399e798602a0" >
+			<compression:entries ><![CDATA[#[{"compressed.txt": payload}]]]></compression:entries>
+			<compression:archiver >
+				<compression:zip-archiver forceZip64="true" />
+			</compression:archiver>
+		</compression:archive>
+		<file:write doc:name="Write" doc:id="64830fb2-fda3-491a-b9c8-3c4e796c5ddb" config-ref="File_Config" path="myzip.zip"/>
+		<ee:transform doc:name="Transform Message" doc:id="2a05c545-a57f-4059-88c8-d688d3d2bc91" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "zip created successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
